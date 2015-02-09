@@ -9,7 +9,7 @@ Each experiment adds further features to the one before. The idea is to be able 
 
 *Basic image generation*
 
-<img src="https://raw.githubusercontent.com/stu-smith/rendering-in-haskell/master/output/experiment00.png" width="64" height="48" align="left" />
+<img src="https://raw.githubusercontent.com/stu-smith/rendering-in-haskell/master/output/experiment00.png" width="64" height="48" align="left" style="margin-right: 10px;" />
 
 Ensuring that we can write an image. Red component increases along the x-axis, green component increases along the y-axis.
 
@@ -17,6 +17,6 @@ Ensuring that we can write an image. Red component increases along the x-axis, g
 
 *Flat shading*
 
-<img src="https://raw.githubusercontent.com/stu-smith/rendering-in-haskell/master/output/experiment01.png" width="64" height="48" align="left" />
+<img src="https://raw.githubusercontent.com/stu-smith/rendering-in-haskell/master/output/experiment01.png" width="64" height="48" align="left" style="margin-right: 10px;" />
 
 Rendering the Cornell box using flat shading. Shows basic ray-casting and nothing else.
