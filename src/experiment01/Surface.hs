@@ -19,9 +19,9 @@ data Surface = Surface
 
 instance Transform Surface where
     translate !v (Surface sfcIntersection sfcNormal sfcColor) =
-        Surface { intersection = newIntersection
-                , normalAtPoint       = newNormal
-                , flatColor           = sfcColor
+        Surface { intersection  = newIntersection
+                , normalAtPoint = newNormal
+                , flatColor     = sfcColor
                 }
       where newIntersection !ray = sfcIntersection $ translate nv ray
             newNormal       !pos = sfcNormal       $ translate nv pos
@@ -64,6 +64,7 @@ sphereNormal invr p =
 planeIntersection :: Point -> Vector -> Ray -> Maybe Double
 planeIntersection point normal (Ray ro rd)
     | ln == 0.0  = Nothing
+    | d   < 0.0  = Nothing
     | otherwise = Just d
   where d  = ((ro `to` point) |.| normal) / ln
         ln = rd |.| normal
