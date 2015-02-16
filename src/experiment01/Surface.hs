@@ -10,8 +10,9 @@ import Core   ( Vector(..), Point(..), Ray(..), Transform(..)
               , origin, to, neg, (|.|) )
 import Color  ( Color(..) )
 
+
 data Surface = Surface
-    { intersection  :: (Ray   -> Maybe Double)
+    { intersection  :: Ray -> Maybe Double
     , flatColor     :: !Color
     }
 
@@ -54,8 +55,8 @@ sphereIntersection !r (Ray !ro !rd)
 
 planeIntersection :: Point -> Vector -> Ray -> Maybe Double
 planeIntersection point normal (Ray ro rd)
-    | ln == 0.0  = Nothing
-    | d   < 0.0  = Nothing
+    | ln == 0.0 = Nothing
+    | d   < 0.0 = Nothing
     | otherwise = Just d
   where d  = ((ro `to` point) |.| normal) / ln
         ln = rd |.| normal

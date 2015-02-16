@@ -12,25 +12,26 @@ import Data.List            ( minimumBy )
 import Data.Maybe           ( mapMaybe )
 import Data.Ord             ( comparing )
 
-import Core                 ( Ray, Point, at )
+import Core                 ( Ray, RayPosition, Point, at )
+import Light                ( PointLight )
 import Surface              ( Surface, intersection )
 
 
-data Scene = Scene [Surface]
+data Scene = Scene [Surface] [PointLight]
 
 data Intersection = Intersection
     { rayTested     :: Ray
     , surface       :: Surface
-    , rayPosition   :: Double
+    , rayPosition   :: RayPosition
     , worldPosition :: Point
     }
 
-mkScene :: [Surface] -> Scene
+mkScene :: [Surface] -> [PointLight] -> Scene
 mkScene =
     Scene
 
 sceneIntersection :: Scene -> Ray -> Maybe Intersection
-sceneIntersection (Scene surfaces) ray =
+sceneIntersection (Scene surfaces _) ray =
       minimumBy (comparing rayPosition) <$> maybeIntersections
   where
     allIntersections   = mapMaybe (renderableIntersection ray) surfaces

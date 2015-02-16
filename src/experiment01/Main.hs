@@ -22,7 +22,7 @@ main = do
     saveRender "output/experiment01.png" 640 480 $ render cam cornellBox
     putStrLn "Written output to output/experiment01.png"
   where cam = Ray { rayOrigin    = Point 50.0 52.0 295.6
-                  , rayDirection = normalize $ Vector (0.0) (-0.042612) (-1.0)
+                  , rayDirection = normalize $ Vector 0.0 (-0.042612) (-1.0)
                   }
 
 
