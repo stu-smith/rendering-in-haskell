@@ -48,8 +48,8 @@ cornellBox = mkScene
     ambient       = flatMaterial (Color 0.1 0.1 0.1)
     emissiveWhite = flatMaterial (Color 1.00 1.00 1.00)
     shiny         = addMaterials [ ambient
-                                 , diffuseMaterial (Color 0.7 0.7 0.7) 0.3
-                                 , specularMaterial 0.8 10.0
+                                 , diffuseMaterial (Color 0.9 0.9 0.9) 0.5
+                                 , specularMaterial 0.5 10.0
                                  ]
     reddish       = addMaterials [ambient, diffuseMaterial (Color 0.75 0.25 0.25) 0.5]
     blueish       = addMaterials [ambient, diffuseMaterial (Color 0.25 0.25 0.75) 0.5]
