@@ -6,8 +6,8 @@ module Surface
 )
 where
 
-import Core      ( UnitVector, Point(..), Ray(..), Transform(..), RayPosition
-                 , origin, to, neg, toRayPosition, normalize, (|.|) )
+import Core      ( UnitVector, Point(..), Ray(..), Transform(..), RayPosition, VectorUnaryOps(..)
+                 , origin, to, neg, toRayPosition, unsafeForceUnitVector, (|.|) )
 import Material  ( Material )
 
 
@@ -33,7 +33,7 @@ instance Transform Surface where
 mkSphere :: Double -> Material -> Surface
 mkSphere !radius !mat = Surface
     { intersection  = sphereIntersection radius
-    , normalAtPoint = sphereNormal
+    , normalAtPoint = sphereNormal (1.0 / radius)
     , material      = mat
     }
 
@@ -58,9 +58,9 @@ sphereIntersection !r (Ray !ro !rd)
             !det = (b * b) - (op |.| op) + (r * r)
             sd   = sqrt det
 
-sphereNormal :: Point -> UnitVector
-sphereNormal p =
-    normalize (origin `to` p)
+sphereNormal :: Double -> Point -> UnitVector
+sphereNormal invr p =
+    unsafeForceUnitVector $ (origin `to` p) |*| invr
 
 planeIntersection :: Point -> UnitVector -> Ray -> Maybe RayPosition
 planeIntersection point normal (Ray ro rd)

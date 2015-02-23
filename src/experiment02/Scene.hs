@@ -4,6 +4,7 @@ module Scene
 , Intersection(..)
 , mkScene
 , sceneIntersection
+, pointLights
 )
 where
 
@@ -49,3 +50,7 @@ renderableIntersection ray sfc =
                    , rayPosition   = t
                    , worldPosition = ray `at` t
                    }
+
+pointLights :: Scene -> [PointLight]
+pointLights (Scene _ !pls) =
+    pls

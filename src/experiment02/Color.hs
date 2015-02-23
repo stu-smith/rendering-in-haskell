@@ -11,11 +11,7 @@ import Data.ByteString  ( pack )
 import Data.Word        ( Word8 )
 
 
-data Color = Color
-  { red    :: !Double
-  , green  :: !Double
-  , blue   :: !Double
-  }
+data Color = Color !Double !Double !Double
 
 saveRender :: FilePath -> Int -> Int -> (Int -> Int -> Int -> Int -> Color) -> IO ()
 saveRender path width height render = do

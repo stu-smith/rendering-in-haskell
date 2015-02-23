@@ -13,11 +13,13 @@ module Core
 , VectorBinaryOps(..)
 , vector
 , normal
+, unsafeForceUnitVector
 , origin
 , to
 , normalize
 , at
 , toRayPosition
+, magnitude
 )
 where
 
@@ -42,8 +44,9 @@ class Transform t where
     translate :: NonUnitVector -> t -> t
 
 class VectorUnaryOps v where
-    neg   :: v -> v
-    (|*|) :: v -> Double -> NonUnitVector
+    neg          :: v -> v
+    vectorValues :: v -> (Double, Double, Double)
+    (|*|)        :: v -> Double -> NonUnitVector
 
 class VectorBinaryOps v1 v2 where
     (|.|) :: v1 -> v2 -> Double
@@ -67,6 +70,8 @@ instance VectorUnaryOps NonUnitVector where
         vector (-xv)
                (-yv)
                (-zv)
+    vectorValues (NonUnitVector (Vector !x !y !z)) =
+        (x, y, z)
     (|*|) (NonUnitVector (Vector !vx !vy !vz)) !s =
         vector (vx * s)
                (vy * s)
@@ -75,8 +80,10 @@ instance VectorUnaryOps NonUnitVector where
 instance VectorUnaryOps UnitVector where
     neg (UnitVector (Vector !xv !yv !zv)) =
         UnitVector (Vector (-xv)
-                                 (-yv)
-                                 (-zv))
+                           (-yv)
+                           (-zv))
+    vectorValues (UnitVector (Vector !x !y !z)) =
+        (x, y, z)
     (|*|) (UnitVector (Vector !vx !vy !vz)) !s =
         vector (vx * s)
                (vy * s)
@@ -131,6 +138,10 @@ vector !x !y !z =
 normal :: Double -> Double -> Double -> UnitVector
 normal !x !y !z =
     normalize $ vector x y z
+
+unsafeForceUnitVector :: NonUnitVector -> UnitVector
+unsafeForceUnitVector (NonUnitVector v) =
+    UnitVector v
 
 origin :: Point
 origin = Point 0.0 0.0 0.0

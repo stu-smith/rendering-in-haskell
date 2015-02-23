@@ -30,10 +30,10 @@ cornellBox :: Scene
 cornellBox = mkScene
     [ plane  (Point   1.0  40.8  81.6) (Vector   1.0   0.0   0.0)  (Color 0.75 0.25 0.25)
     , plane  (Point  99.0  40.8  81.6) (Vector (-1.0)  0.0   0.0)  (Color 0.25 0.25 0.75)
-    , plane  (Point  50.0  40.8   0.0) (Vector   0.0   0.0 (-1.0)) (Color 0.75 0.75 0.75)
+    , plane  (Point  50.0  40.8   0.0) (Vector   0.0   0.0   1.0)  (Color 0.75 0.75 0.75)
     , plane  (Point  50.0   0.0  81.6) (Vector   0.0   1.0   0.0)  (Color 0.75 0.75 0.75)
     , plane  (Point  50.0  81.6  81.6) (Vector   0.0 (-1.0)  0.0)  (Color 0.75 0.75 0.75)
-    , plane  (Point  50.0  40.8 170.0) (Vector   0.0   0.0   1.0)  (Color 0.00 0.00 0.00)
+    , plane  (Point  50.0  40.8 170.0) (Vector   0.0   0.0 (-1.0)) (Color 0.00 0.00 0.00)
 
     , sphere (Point  27.0  16.5  47.0)  16.5                       (Color 0.99 0.99 0.99)
     , sphere (Point  73.0  16.5  78.0)  16.5                       (Color 0.99 0.99 0.99)
