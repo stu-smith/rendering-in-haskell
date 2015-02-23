@@ -10,24 +10,24 @@ where
 
 import Data.List  ( foldl' )
 
-import Core       ( Ray(..), Point, RayPosition, UnitVector
+import Core       ( Ray(..), Point, UnitVector
                   , normalize, to, magnitude, neg, (|.|), (|*|), (|-|) )
 import Color      ( Color(..) )
 import Light      ( PointLight(..), Light, colorToLight, plus, black, colored, scaled )
 
 
-type Material = [PointLight] -> Ray -> RayPosition -> Point -> UnitVector -> Light
+type Material = [PointLight] -> Ray -> Point -> UnitVector -> Light
 
-addMaterials :: [Material] -> [PointLight] -> Ray -> RayPosition -> Point -> UnitVector -> Light
-addMaterials materials lights ray rp ixp surfaceNormal =
-    foldl' plus black $ map (\m -> m lights ray rp ixp surfaceNormal) materials
+addMaterials :: [Material] -> [PointLight] -> Ray -> Point -> UnitVector -> Light
+addMaterials materials lights ray ixp surfaceNormal =
+    foldl' plus black $ map (\m -> m lights ray ixp surfaceNormal) materials
 
-flatMaterial :: Color -> [PointLight] -> Ray -> RayPosition -> Point -> UnitVector -> Light
-flatMaterial !col _ _ _ _ _ =
+flatMaterial :: Color -> [PointLight] -> Ray -> Point -> UnitVector -> Light
+flatMaterial !col _ _ _ _ =
     colorToLight col
 
-diffuseMaterial :: Color -> Double -> [PointLight] -> Ray -> RayPosition -> Point -> UnitVector -> Light
-diffuseMaterial !col !factor !lights _ _ intersectionPosition surfaceNormal =
+diffuseMaterial :: Color -> Double -> [PointLight] -> Ray -> Point -> UnitVector -> Light
+diffuseMaterial !col !factor !lights _ intersectionPosition surfaceNormal =
     foldl' plus black $ map diffuseLight lights
   where
     diffuseLight (PointLight !lightPosition !lightColor)
@@ -40,8 +40,8 @@ diffuseMaterial !col !factor !lights _ _ intersectionPosition surfaceNormal =
         lightAttenuation = 1.0 / lightDistance
         diffuseFactor    = factor * (surfaceNormal |.| lightRay) * lightAttenuation
 
-specularMaterial :: Double -> Double -> [PointLight] -> Ray -> RayPosition -> Point -> UnitVector -> Light
-specularMaterial !factor !shininess !lights (Ray _ !rd) _ intersectionPosition surfaceNormal =
+specularMaterial :: Double -> Double -> [PointLight] -> Ray -> Point -> UnitVector -> Light
+specularMaterial !factor !shininess !lights (Ray _ !rd) intersectionPosition surfaceNormal =
     foldl' plus black $ map specularLight lights
   where
     specularLight (PointLight !lightPosition !lightColor)

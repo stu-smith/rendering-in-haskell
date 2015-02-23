@@ -18,5 +18,5 @@ renderRay ray scene =
     toColor $ fromMaybe black maybeColor
   where
     maybeColor = do
-        (Intersection rt (Surface _ nrm mat) rp wp) <- sceneIntersection scene ray
-        return $ mat (pointLights scene) rt rp wp (nrm wp)
+        (Intersection rt (Surface _ nrm mat) _ wp) <- sceneIntersection scene ray
+        return $ mat (pointLights scene) rt wp (nrm wp)
