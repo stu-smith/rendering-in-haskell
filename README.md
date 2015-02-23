@@ -31,7 +31,7 @@ Shows how to implement diffuse shading.
 
 ### Experiment 03
 
-*Specular lightinh*
+*Specular lighting*
 
 <img src="https://raw.githubusercontent.com/stu-smith/rendering-in-haskell/master/output/experiment03.png" width="64" height="48" align="left" />
 
