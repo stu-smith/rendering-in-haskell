@@ -10,7 +10,7 @@ import Data.List  ( foldl' )
 
 import Core       ( Ray, Point, RayPosition, UnitVector, normalize, to, magnitude, (|.|) )
 import Color      ( Color(..) )
-import Light      ( PointLight(..), Light, colorToLight, plus, black, colored, dimmed )
+import Light      ( PointLight(..), Light, colorToLight, plus, black, colored, scaled )
 
 
 type Material = [PointLight] -> Ray -> RayPosition -> Point -> UnitVector -> Light
@@ -23,8 +23,8 @@ diffuseMaterial :: Color -> Double -> [PointLight] -> Ray -> RayPosition -> Poin
 diffuseMaterial !col !factor !lights _ _ intersectionPosition surfaceNormal =
     foldl' plus black $ map diffuseLight lights
   where
-    diffuseLight !(PointLight !lightPosition !lightColor)
-        | diffuseFactor > 0 = lightColor `colored` col `dimmed` diffuseFactor
+    diffuseLight (PointLight !lightPosition !lightColor)
+        | diffuseFactor > 0 = lightColor `colored` col `scaled` diffuseFactor
         | otherwise         = black
       where
         lightVector      = intersectionPosition `to` lightPosition
