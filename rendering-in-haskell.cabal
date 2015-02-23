@@ -66,3 +66,14 @@ executable experiment04
   default-language:    Haskell2010
   ghc-options:         -O2 -Wall -funbox-strict-fields -fwarn-tabs -threaded -with-rtsopts=-N
   default-extensions:  BangPatterns
+
+executable experiment05
+  main-is:             Main.hs
+  build-depends:       base >=4.7 && <4.8
+                     , bmp -any
+                     , bytestring -any
+                     , directory -any
+  hs-source-dirs:      src/experiment05
+  default-language:    Haskell2010
+  ghc-options:         -O2 -Wall -funbox-strict-fields -fwarn-tabs -threaded -with-rtsopts=-N
+  default-extensions:  BangPatterns
