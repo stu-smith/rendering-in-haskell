@@ -10,7 +10,7 @@ import Core              ( Ray(..), Point(..), UnitVector
                          , vector, normal, normalize, translate, to, origin, cross
                          , (|*|), (|+|) )
 import Color             ( Color(..), saveRender )
-import Light             ( PointLight(..), Light(..) )
+import Light             ( PointLightSource(..), Light(..) )
 import Material          ( Material, diffuseMaterial, flatMaterial )
 import Scene             ( Scene, mkScene )
 import Surface           ( Surface(..), mkSphere, mkPlane )
@@ -42,7 +42,7 @@ cornellBox = mkScene
 
     , sphere (Point  50.0 681.33 81.6) 600.0                       $ flatMaterial (Color 1.00 1.00 1.00)
     ]
-    [ PointLight (Point 50.0 79.33 81.6) (Light 100.0 100.0 100.0)
+    [ PointLightSource (Point 50.0 79.33 81.6) (Light 100.0 100.0 100.0)
     ]
 
 

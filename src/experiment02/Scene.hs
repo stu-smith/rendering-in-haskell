@@ -4,7 +4,7 @@ module Scene
 , Intersection(..)
 , mkScene
 , sceneIntersection
-, pointLights
+, pointLightSources
 )
 where
 
@@ -14,11 +14,11 @@ import Data.Maybe           ( mapMaybe )
 import Data.Ord             ( comparing )
 
 import Core                 ( Ray, RayPosition, Point, at )
-import Light                ( PointLight )
+import Light                ( PointLightSource )
 import Surface              ( Surface, intersection )
 
 
-data Scene = Scene [Surface] [PointLight]
+data Scene = Scene [Surface] [PointLightSource]
 
 data Intersection = Intersection
     { rayTested     :: Ray
@@ -27,7 +27,7 @@ data Intersection = Intersection
     , worldPosition :: Point
     }
 
-mkScene :: [Surface] -> [PointLight] -> Scene
+mkScene :: [Surface] -> [PointLightSource] -> Scene
 mkScene =
     Scene
 
@@ -51,6 +51,6 @@ renderableIntersection ray sfc =
                    , worldPosition = ray `at` t
                    }
 
-pointLights :: Scene -> [PointLight]
-pointLights (Scene _ !pls) =
+pointLightSources :: Scene -> [PointLightSource]
+pointLightSources (Scene _ !pls) =
     pls

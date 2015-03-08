@@ -5,8 +5,8 @@ module Scene
 , TaggedSurface(..)
 , mkScene
 , sceneIntersection
-, allPointLights
-, pointLightsVisibleFrom
+, allPointLightSources
+, pointLightSourcesVisibleFrom
 )
 where
 
@@ -16,11 +16,11 @@ import Data.Maybe           ( mapMaybe )
 import Data.Ord             ( comparing )
 
 import Core                 ( Ray(..), RayPosition, Point, at, normalizeWithLength, to )
-import Light                ( PointLight(..) )
+import Light                ( PointLightSource(..) )
 import Surface              ( Surface, intersection )
 
 
-data Scene = Scene [TaggedSurface] [PointLight]
+data Scene = Scene [TaggedSurface] [PointLightSource]
 
 data TaggedSurface = TaggedSurface Int Surface
 
@@ -34,9 +34,9 @@ data Intersection = Intersection
     , worldPosition :: Point
     }
 
-mkScene :: [Surface] -> [PointLight] -> Scene
-mkScene surfaces pointLights =
-    Scene (zipWith TaggedSurface [1..] surfaces) pointLights
+mkScene :: [Surface] -> [PointLightSource] -> Scene
+mkScene surfaces =
+    Scene (zipWith TaggedSurface [1..] surfaces)
 
 sceneIntersection :: Scene -> Maybe TaggedSurface -> Ray -> Maybe Intersection
 sceneIntersection (Scene surfaces _) maybeExclusion ray =
@@ -60,16 +60,16 @@ renderableIntersection ray ts@(TaggedSurface _ sfc) =
                    , worldPosition = ray `at` t
                    }
 
-allPointLights :: Scene -> [PointLight]
-allPointLights (Scene _ !pointLights) =
-    pointLights
+allPointLightSources :: Scene -> [PointLightSource]
+allPointLightSources (Scene _ !pointLightSources) =
+    pointLightSources
 
-pointLightsVisibleFrom :: Scene -> TaggedSurface -> Point -> [PointLight]
-pointLightsVisibleFrom scene@(Scene _ !lights) excludeSurface !point =
+pointLightSourcesVisibleFrom :: Scene -> TaggedSurface -> Point -> [PointLightSource]
+pointLightSourcesVisibleFrom scene@(Scene _ !lights) excludeSurface !point =
     filter (isLightVisibleFromPoint scene excludeSurface point) lights
 
-isLightVisibleFromPoint :: Scene -> TaggedSurface -> Point -> PointLight -> Bool
-isLightVisibleFromPoint !scene !excludeSurface !point (PointLight !lightPosition _) =
+isLightVisibleFromPoint :: Scene -> TaggedSurface -> Point -> PointLightSource -> Bool
+isLightVisibleFromPoint !scene !excludeSurface !point (PointLightSource !lightPosition _) =
     go maybeIntersection
   where
     (!toLight, lightOffset)                  = normalizeWithLength (point `to` lightPosition)

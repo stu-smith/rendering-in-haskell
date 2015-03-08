@@ -1,7 +1,7 @@
 module Light
 (
   Light(..)
-, PointLight(..)
+, PointLightSource(..)
 , colorToLight
 , plus
 , black
@@ -14,13 +14,13 @@ module Light
 )
 where
 
-import Core           ( Point )
-import Color          ( Color(..) )
+import Core   ( Point )
+import Color  ( Color(..) )
 
 
 data Light = Light !Double !Double !Double
 
-data PointLight = PointLight !Point !Light
+data PointLightSource = PointLightSource !Point !Light
 
 colorToLight :: Color -> Light
 colorToLight (Color !r !g !b) =

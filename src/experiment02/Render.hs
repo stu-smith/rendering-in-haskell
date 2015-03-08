@@ -9,7 +9,7 @@ import Data.Maybe  ( fromMaybe )
 import Color       ( Color )
 import Core        ( Ray )
 import Light       ( toColor, black )
-import Scene       ( Scene, Intersection(..), sceneIntersection, pointLights )
+import Scene       ( Scene, Intersection(..), sceneIntersection, pointLightSources )
 import Surface     ( Surface(..) )
 
 
@@ -19,4 +19,4 @@ renderRay ray scene =
   where
     maybeColor = do
         (Intersection rt (Surface _ nrm mat) _ wp) <- sceneIntersection scene ray
-        return $ mat (pointLights scene) rt wp (nrm wp)
+        return $ mat (pointLightSources scene) rt wp (nrm wp)

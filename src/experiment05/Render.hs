@@ -10,7 +10,7 @@ import Color       ( Color )
 import Core        ( Ray )
 import Light       ( Light, toColor, black )
 import Scene       ( Scene, TaggedSurface(..), Intersection(..)
-                   , sceneIntersection, pointLightsVisibleFrom )
+                   , sceneIntersection, pointLightSourcesVisibleFrom )
 import Surface     ( Surface(..) )
 
 
@@ -25,7 +25,7 @@ renderRayRecursive scene level ray
   where
     maybeColor = do
         (Intersection rt ts@(TaggedSurface _ (Surface _ nrm mat)) _ wp) <- sceneIntersection scene Nothing ray
-        let lights          = pointLightsVisibleFrom scene ts wp
+        let lights          = pointLightSourcesVisibleFrom scene ts wp
         let surfaceNormal   = nrm wp
         let recursiveRender = renderRayRecursive scene (level - 1)
         return $ mat lights rt wp surfaceNormal recursiveRender
