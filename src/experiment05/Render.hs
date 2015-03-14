@@ -7,9 +7,9 @@ where
 import Data.Maybe  ( fromMaybe )
 
 import Color       ( Color )
-import Core        ( Ray )
+import Core        ( Ray, (|*|), translate )
 import Light       ( Light, toColor, black )
-import Scene       ( Scene, TaggedSurface(..), Intersection(..)
+import Scene       ( Scene, Intersection(..)
                    , sceneIntersection, pointLightSourcesVisibleFrom )
 import Surface     ( Surface(..) )
 
@@ -24,8 +24,11 @@ renderRayRecursive scene level ray
     | otherwise  = fromMaybe black maybeColor
   where
     maybeColor = do
-        (Intersection rt ts@(TaggedSurface _ (Surface _ nrm mat)) _ wp) <- sceneIntersection scene Nothing ray
-        let lights          = pointLightSourcesVisibleFrom scene ts wp
-        let surfaceNormal   = nrm wp
-        let recursiveRender = renderRayRecursive scene (level - 1)
+        (Intersection rt (Surface _ nrm mat) _ wp) <- sceneIntersection scene ray
+        let surfaceNormal    = nrm wp
+        let movedFromSurface = translate (surfaceNormal |*| epsilon) wp
+        let lights           = pointLightSourcesVisibleFrom scene movedFromSurface
+        let recursiveRender  = renderRayRecursive scene (level - 1)
         return $ mat lights rt wp surfaceNormal recursiveRender
+    epsilon = 0.0001
+
