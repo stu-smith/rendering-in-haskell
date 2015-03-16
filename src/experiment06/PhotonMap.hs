@@ -12,12 +12,12 @@ import Data.KdMap.Static    ( KdMap, build, inRadius )
 
 import Color                ( Color, black )
 import Core                 ( Point(..), Ray(..), UnitVector
-                            , normalize, vectorValues, unitX, unitY, cross, translate
-                            , (|*|), (|.|), (|-|), (|+|) )
+                            , normalize, translate
+                            , (|*|), (|.|), (|-|) )
 import Light                ( Light, PhotonLightSource, toColor )
 import Material             ( probabilityDiffuseReflection, probabilitySpecularReflection
                             , diffuseLight, specularLight )
-import Rnd                  ( Rnd, rndDouble )
+import Rnd                  ( Rnd, rndDouble, rndDirectionInHemisphere )
 import Scene                ( Scene, Intersection(..), allPhotonLightSources, sceneIntersection )
 import Surface              ( Surface(..) )
 
@@ -54,9 +54,7 @@ traceLightRay scene incoming@(incomingRay, incomingLight) =
       Just ix -> do
           maybeOutgoingLight <- computeOutgoingLightRay ix incoming
           let photonIntersection = toPhotonIntersection ix
-          recurse <- case maybeOutgoingLight of
-                       Nothing            -> return []
-                       Just outgoingLight -> traceLightRay scene outgoingLight
+          recurse <- maybe (return []) (traceLightRay scene) maybeOutgoingLight
           return (photonIntersection : recurse)
   where
     maybeIntersection = sceneIntersection scene incomingRay
@@ -73,7 +71,7 @@ computeOutgoingLightRay (Intersection _ (Surface _ nrm material) _ wp) ((Ray _ i
     go prob | prob < pd      = goDiffuse
             | prob < pd + ps = goSpecular
             | otherwise      = return Nothing
-    goDiffuse  = do
+    goDiffuse = do
         dr <- diffuseReflect surfaceNormal
         return $ Just ( Ray movedFromSurface dr
                       , diffuseLight  material incomingLight
@@ -91,29 +89,14 @@ specularReflect surfaceNormal incomingRay =
     normalize $ surfaceNormal |*| ((surfaceNormal |*| 2) |.| incomingRay) |-| incomingRay
 
 diffuseReflect :: UnitVector -> Rnd UnitVector
-diffuseReflect normal = do
-    r1 <- rndDouble 0.0 1.0
-    r2 <- rndDouble 0.0 1.0
-    let theta    = asin $ sqrt r1
-    let phi      = pi * pi * r2
-    let sinTheta = sin theta
-    let cosTheta = cos theta
-    let sinPhi   = sin phi
-    let cosPhi   = cos phi
-    return $ normalize $ (vb1    |*| (sinTheta * sinPhi)) |+|
-                         (normal |*| cosTheta)            |+|
-                         (vb2    |*| (cosPhi * sinTheta))
-  where
-    (nx, ny, _) = vectorValues normal
-    vb1pre      = if abs nx > abs ny then unitY else unitX
-    vb1         = vb1pre |-| (normal |*| (normal |.| vb1pre))
-    vb2         = normal `cross` vb1
+diffuseReflect =
+    rndDirectionInHemisphere
 
 getColorAtIntersection :: PhotonMap -> Intersection -> Color
 getColorAtIntersection photonMap (Intersection _ _ _ wp) =
     go nearInteractions
   where
-    nearInteractions = inRadius photonMap 1.0 wp
+    nearInteractions = inRadius photonMap 0.5 wp
     go [] = black
     go ((_, PhotonSurfaceInteraction _ light):_) = toColor light
 

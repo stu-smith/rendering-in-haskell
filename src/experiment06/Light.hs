@@ -15,9 +15,9 @@ module Light
 )
 where
 
-import Core   ( Ray(..), Point, UnitVector, normalize, vector, neg, (|.|) )
+import Core   ( Ray(..), Point, UnitVector )
 import Color  ( Color(..) )
-import Rnd    ( Rnd, rndDouble )
+import Rnd    ( Rnd, rndDirectionInHemisphere )
 
 
 data Light = Light !Double !Double !Double
@@ -69,11 +69,6 @@ toColor (Light !r !g !b) =
 
 discLight :: Point -> UnitVector -> Light -> PhotonLightSource
 discLight pos normal light = do
-    dx <- rndDouble 0.0 1.0
-    dy <- rndDouble 0.0 1.0
-    dz <- rndDouble 0.0 1.0
-    let unit = normalize $ vector dx dy dz
-    let dp = normal |.| unit
-    let dir = if dp > 0 then unit else neg unit
+    dir <- rndDirectionInHemisphere normal
     return (Ray pos dir, light)
     -- TODO this currently only emits from a point

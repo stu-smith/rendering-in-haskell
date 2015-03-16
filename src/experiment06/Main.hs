@@ -29,7 +29,7 @@ main = do
     cam = Ray { rayOrigin    = Point 50.0 52.0 295.6
               , rayDirection = normal 0.0 (-0.042612) (-1.0)
               }
-    photonMap = runRnd 1 $ generatePhotonMap cornellBox 100
+    photonMap = runRnd 1 $ generatePhotonMap cornellBox 5000
 
 
 
@@ -47,7 +47,7 @@ cornellBox = mkScene
 
     , disc   (Point  50.0   81.0 81.6) (normal   0.0 (-1.0)  0.0) 5.0 emissiveWhite
     ]
-    [ discLight (Point 50.0 79.33 81.6) (normalize $ vector 0.0 (-1.0) 0.0) (Light 100.0 100.0 100.0)
+    [ discLight (Point 50.0 79.33 81.6) (normalize $ vector 0.0 (-1.0) 0.0) (Light 1.0 1.0 1.0)
     ]
   where
     emissiveWhite = mkMaterial (ColorProbability 0.99 0.99 0.99) (ColorProbability 0.00 0.00 0.00)
