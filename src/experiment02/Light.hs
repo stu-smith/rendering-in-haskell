@@ -4,6 +4,7 @@ module Light
 , PointLightSource(..)
 , colorToLight
 , plus
+, sumLights
 , black
 , red
 , green
@@ -14,8 +15,10 @@ module Light
 )
 where
 
-import Core   ( Point )
-import Color  ( Color(..) )
+import Data.List  ( foldl' )
+
+import Core       ( Point )
+import Color      ( Color(..) )
 
 
 data Light = Light !Double !Double !Double
@@ -31,6 +34,10 @@ plus (Light !r1 !g1 !b1) (Light !r2 !g2 !b2) =
     Light (r1 + r2)
           (g1 + g2)
           (b1 + b2)
+
+sumLights :: [Light] -> Light
+sumLights =
+    foldl' plus black
 
 black :: Light
 black =

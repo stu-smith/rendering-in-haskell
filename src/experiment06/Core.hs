@@ -25,17 +25,30 @@ module Core
 , unitX
 , unitY
 , unitZ
+, perpendiculars
 )
 where
+
+import Control.DeepSeq  ( NFData(..) )
 
 
 data Vector = Vector !Double !Double !Double
 
+instance NFData Vector where
+    rnf !(Vector !_ !_ !_) = ()
+
 newtype NonUnitVector = NonUnitVector Vector
+
+instance NFData NonUnitVector
 
 newtype UnitVector = UnitVector Vector
 
+instance NFData UnitVector
+
 data Point = Point !Double !Double !Double
+
+instance NFData Point where
+    rnf !(Point !_ !_ !_) = ()
 
 data Ray = Ray
     { rayOrigin    :: !Point
@@ -52,6 +65,7 @@ class VectorUnaryOps v where
     neg          :: v -> v
     vectorValues :: v -> (Double, Double, Double)
     (|*|)        :: v -> Double -> NonUnitVector
+    rotateAround :: v -> UnitVector -> Double -> v
 
 class (VectorUnaryOps v1, VectorUnaryOps v2) => VectorBinaryOps v1 v2 where
     (|.|) :: v1 -> v2 -> Double
@@ -83,6 +97,11 @@ instance VectorUnaryOps NonUnitVector where
         vector (vx * s)
                (vy * s)
                (vz * s)
+    rotateAround v k theta =
+        (v |*| cosTheta ) |+| ((k `cross` v) |*| sinTheta) |+| (k |*| ((k |.| v) * (1.0 - cosTheta)))
+      where
+        cosTheta = cos theta
+        sinTheta = sin theta
 
 instance VectorUnaryOps UnitVector where
     neg (UnitVector (Vector !xv !yv !zv)) =
@@ -95,6 +114,13 @@ instance VectorUnaryOps UnitVector where
         vector (vx * s)
                (vy * s)
                (vz * s)
+    rotateAround v k theta =
+        normalize ((v |*| cosTheta ) |+|
+                   ((k `cross` v) |*| sinTheta) |+|
+                   (k |*| ((k |.| v) * (1.0 - cosTheta))))
+      where
+        cosTheta = cos theta
+        sinTheta = sin theta
 
 instance VectorBinaryOps NonUnitVector NonUnitVector where
     (|.|) (NonUnitVector (Vector !vx !vy !vz)) (NonUnitVector (Vector !wx !wy !wz)) =
@@ -214,3 +240,12 @@ at (Ray ro rd) (RayPosition t) =
 toRayPosition :: Double -> RayPosition
 toRayPosition =
     RayPosition
+
+perpendiculars :: UnitVector -> (NonUnitVector, NonUnitVector)
+perpendiculars n =
+    (vb1, vb2)
+  where
+    (!nx, !ny, _) = vectorValues n
+    !vb1pre       = if abs nx > abs ny then unitY else unitX
+    vb1           = vb1pre |-| (n |*| (n |.| vb1pre))
+    vb2           = n `cross` vb1

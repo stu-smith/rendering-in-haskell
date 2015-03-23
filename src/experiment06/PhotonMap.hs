@@ -1,36 +1,48 @@
+
 module PhotonMap
 (
   PhotonMap
 , PhotonSurfaceInteraction
+, count
 , generatePhotonMap
-, getColorAtIntersection
+, getLightToViewerAtIntersection
 )
 where
 
+import Control.DeepSeq      ( NFData(..), force )
 import Control.Monad        ( replicateM, liftM )
 import Data.KdMap.Static    ( KdMap, build, inRadius )
 
-import Color                ( Color, black )
 import Core                 ( Point(..), Ray(..), UnitVector
-                            , normalize, translate
+                            , normalize, translate, neg, magnitude, to
                             , (|*|), (|.|), (|-|) )
-import Light                ( Light, PhotonLightSource, toColor )
+import Light                ( Light, PhotonLightSource, sumLights, scaled )
 import Material             ( probabilityDiffuseReflection, probabilitySpecularReflection
-                            , diffuseLight, specularLight )
+                            , diffuseLight, specularLight, brdf )
 import Rnd                  ( Rnd, rndDouble, rndDirectionInHemisphere )
 import Scene                ( Scene, Intersection(..), allPhotonLightSources, sceneIntersection )
 import Surface              ( Surface(..) )
 
 
-data PhotonSurfaceInteraction = PhotonSurfaceInteraction UnitVector Light
+data PhotonSurfaceInteraction = PhotonSurfaceInteraction !UnitVector !Light
 
-type PhotonMap = KdMap Double Point PhotonSurfaceInteraction
+instance NFData PhotonSurfaceInteraction
+    where rnf (PhotonSurfaceInteraction !v !l) = rnf v `seq` rnf l `seq` ()
+
+data PhotonMap = PhotonMap (KdMap Double Point PhotonSurfaceInteraction) !Int !Double
+
+instance NFData PhotonMap where
+    rnf (PhotonMap !k !n !s) = rnf k `seq` rnf n `seq` rnf s `seq` ()
 
 generatePhotonMap :: Scene -> Int -> Rnd PhotonMap
-generatePhotonMap scene num =
-    liftM (build pointToList) $ generatePhotonSurfaceInxs scene num
+generatePhotonMap scene num = do
+    psis <- generatePhotonSurfaceInxs scene num
+    return $ force $ PhotonMap (build pointToList psis) (length psis) (1.0 / fromIntegral num)
   where
     pointToList (Point !x !y !z) = [x, y, z]
+
+count :: PhotonMap -> Int
+count (PhotonMap _ n _) = n
 
 generatePhotonSurfaceInxs :: Scene -> Int -> Rnd [(Point, PhotonSurfaceInteraction)]
 generatePhotonSurfaceInxs scene num =
@@ -57,12 +69,12 @@ traceLightRay scene incoming@(incomingRay, incomingLight) =
           recurse <- maybe (return []) (traceLightRay scene) maybeOutgoingLight
           return (photonIntersection : recurse)
   where
-    maybeIntersection = sceneIntersection scene incomingRay
-    toPhotonIntersection (Intersection (Ray _ rd) _ _ pos) =
+    !maybeIntersection = sceneIntersection scene incomingRay
+    toPhotonIntersection (Intersection (Ray _ !rd) _ _ !pos) =
       (pos, PhotonSurfaceInteraction rd incomingLight)
 
 computeOutgoingLightRay :: Intersection -> (Ray, Light) -> Rnd (Maybe (Ray, Light))
-computeOutgoingLightRay (Intersection _ (Surface _ nrm material) _ wp) ((Ray _ incomingRay), incomingLight) = do
+computeOutgoingLightRay (Intersection _ (Surface _ nrm material) _ wp) (Ray _ incomingRay, incomingLight) = do
     prob <- rndDouble 0.0 1.0
     go prob
   where
@@ -80,9 +92,9 @@ computeOutgoingLightRay (Intersection _ (Surface _ nrm material) _ wp) ((Ray _ i
         return $ Just ( Ray movedFromSurface $ specularReflect surfaceNormal incomingRay
                       , specularLight material incomingLight
                       )
-    surfaceNormal = nrm wp
-    movedFromSurface = translate (surfaceNormal |*| epsilon) wp
-    epsilon = 0.0001
+    !surfaceNormal = nrm wp
+    !movedFromSurface = translate (surfaceNormal |*| epsilon) wp
+    !epsilon = 0.0001
 
 specularReflect :: UnitVector -> UnitVector -> UnitVector
 specularReflect surfaceNormal incomingRay =
@@ -92,14 +104,25 @@ diffuseReflect :: UnitVector -> Rnd UnitVector
 diffuseReflect =
     rndDirectionInHemisphere
 
-getColorAtIntersection :: PhotonMap -> Intersection -> Color
-getColorAtIntersection photonMap (Intersection _ _ _ wp) =
-    go nearInteractions
+getLightToViewerAtIntersection :: PhotonMap -> Intersection -> Light
+getLightToViewerAtIntersection (PhotonMap !kdmap _ !scale) (Intersection (Ray _ !outgoingVector) (Surface _ !nrm !material) _ !wp) =
+    (sumLights $ map attenuateByDistance nearInteractions) `scaled` scale
   where
-    nearInteractions = inRadius photonMap 0.5 wp
-    go [] = black
-    go ((_, PhotonSurfaceInteraction _ light):_) = toColor light
+    attenuateByDistance (!pp, !psi) =
+      brdfForInteraction psi `scaled` coneFilter pp wp maxDistance
+    brdfForInteraction (PhotonSurfaceInteraction !incomingVector !incomingLight) =
+      surfaceBrdf incomingLight (neg incomingVector) (neg outgoingVector) surfaceNormal wp
+    !surfaceNormal    = nrm wp
+    !surfaceBrdf      = brdf material
+    !nearInteractions = inRadius kdmap maxDistance wp
+    !maxDistance      = 8.0
 
 concatM :: Monad m => m [[a]] -> m [a]
 concatM =
     liftM concat
+
+coneFilter :: Point -> Point -> Double -> Double
+coneFilter !pp !wp !maxDistance =
+    1.0 - distance / maxDistance
+  where
+    distance = magnitude (pp `to` wp)

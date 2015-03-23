@@ -10,12 +10,10 @@ module Material
 )
 where
 
-import Data.List  ( foldl' )
-
 import Core       ( Ray(..), Point, UnitVector
                   , normalize, to, magnitude, neg, (|.|), (|*|), (|+|), (|-|) )
 import Color      ( Color(..) )
-import Light      ( PointLightSource(..), Light, colorToLight, plus, black, colored, scaled )
+import Light      ( PointLightSource(..), Light, colorToLight, sumLights, black, colored, scaled )
 
 
 type RenderRay = Ray -> Light
@@ -24,7 +22,7 @@ type Material = [PointLightSource] -> Ray -> Point -> UnitVector -> RenderRay ->
 
 addMaterials :: [Material] -> [PointLightSource] -> Ray -> Point -> UnitVector -> RenderRay -> Light
 addMaterials materials lights ray ixp surfaceNormal renderRay =
-    foldl' plus black $ map (\m -> m lights ray ixp surfaceNormal renderRay) materials
+    sumLights $ map (\m -> m lights ray ixp surfaceNormal renderRay) materials
 
 scaleMaterial :: Material -> Double -> [PointLightSource] -> Ray -> Point -> UnitVector -> RenderRay -> Light
 scaleMaterial material factor lights ray ixp surfaceNormal renderRay =
@@ -36,7 +34,7 @@ flatMaterial !col _ _ _ _ _ =
 
 diffuseMaterial :: Color -> Double -> [PointLightSource] -> Ray -> Point -> UnitVector -> RenderRay -> Light
 diffuseMaterial !col !factor !lights _ intersectionPosition surfaceNormal _ =
-    foldl' plus black $ map diffuseLight lights
+    sumLights $ map diffuseLight lights
   where
     diffuseLight (PointLightSource !lightPosition !lightColor)
         | diffuseFactor > 0 = lightColor `colored` col `scaled` diffuseFactor
@@ -48,7 +46,7 @@ diffuseMaterial !col !factor !lights _ intersectionPosition surfaceNormal _ =
 
 specularMaterial :: Double -> Double -> [PointLightSource] -> Ray -> Point -> UnitVector -> RenderRay -> Light
 specularMaterial !factor !shininess !lights (Ray _ !rd) intersectionPosition surfaceNormal _ =
-    foldl' plus black $ map specularLight lights
+    sumLights $ map specularLight lights
   where
     specularLight (PointLightSource !lightPosition !lightColor)
         | cosFactor > 0 = lightColor `scaled` factor `scaled` (cosFactor ** shininess) `scaled` lightAttenuation
