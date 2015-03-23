@@ -31,7 +31,7 @@ main = do
     cam = Ray { rayOrigin    = Point 50.0 52.0 295.6
               , rayDirection = normal 0.0 (-0.042612) (-1.0)
               }
-    photonMap = runRnd 1 $ generatePhotonMap cornellBox 50000
+    photonMap = runRnd 1 $ generatePhotonMap cornellBox 100000
 
 
 

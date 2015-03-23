@@ -115,7 +115,7 @@ getLightToViewerAtIntersection (PhotonMap !kdmap _ !scale) (Intersection (Ray _ 
     !surfaceNormal    = nrm wp
     !surfaceBrdf      = brdf material
     !nearInteractions = inRadius kdmap maxDistance wp
-    !maxDistance      = 8.0
+    !maxDistance      = 5.0
 
 concatM :: Monad m => m [[a]] -> m [a]
 concatM =
