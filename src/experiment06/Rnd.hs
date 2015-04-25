@@ -7,6 +7,7 @@ module Rnd
 )
 where
 
+import Numeric.FastMath     ( )
 import Control.Monad.State  ( State, evalState, get, put )
 import System.Random        ( StdGen, mkStdGen, randomR )
 

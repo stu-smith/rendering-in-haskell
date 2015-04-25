@@ -6,9 +6,10 @@ module Color
 )
 where
 
-import Codec.BMP        ( packRGBA32ToBMP, writeBMP )
-import Data.ByteString  ( pack )
-import Data.Word        ( Word8 )
+import Numeric.FastMath  ( )
+import Codec.BMP         ( packRGBA32ToBMP, writeBMP )
+import Data.ByteString   ( pack )
+import Data.Word         ( Word8 )
 
 
 data Color = Color !Double !Double !Double

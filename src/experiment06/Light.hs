@@ -16,14 +16,14 @@ module Light
 )
 where
 
-import Control.Applicative  ( (<$>) )
-import Control.DeepSeq      ( NFData(..) )
-import Data.List            ( foldl' )
+import Numeric.FastMath  ( )
+import Control.DeepSeq   ( NFData(..) )
+import Data.List         ( foldl' )
 
-import Core                 ( Ray(..), Point, UnitVector
-                            , normalize, perpendiculars, translate, (|+|), (|*|) )
-import Color                ( Color(..) )
-import Rnd                  ( Rnd, rndDouble, rndDirectionInHemisphere )
+import Core              ( Ray(..), Point, UnitVector
+                         , normalize, perpendiculars, translate, (|+|), (|*|) )
+import Color             ( Color(..) )
+import Rnd               ( Rnd, rndDouble, rndDirectionInHemisphere )
 
 
 data Light = Light !Double !Double !Double

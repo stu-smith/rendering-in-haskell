@@ -12,8 +12,9 @@ module Material
 )
 where
 
-import Core   ( UnitVector, Point, (|.|), (|*|), (|-|) )
-import Light  ( Light(..), scaled, sumLights )
+import Numeric.FastMath  ( )
+import Core              ( UnitVector, Point, (|.|), (|*|), (|-|) )
+import Light             ( Light(..), scaled, sumLights )
 
 
 type BRDF = Light -> UnitVector -> UnitVector -> UnitVector -> Point -> Light
@@ -21,11 +22,11 @@ type BRDF = Light -> UnitVector -> UnitVector -> UnitVector -> Point -> Light
 data ColorProbability = ColorProbability !Double !Double !Double
 
 data Material = Material
-  { diffuseProbabilities          :: ColorProbability
-  , specularProbabilities         :: ColorProbability
-  , probabilityDiffuseReflection  :: Double
-  , probabilitySpecularReflection :: Double
-  , brdf                          :: BRDF
+  { diffuseProbabilities          :: !ColorProbability
+  , specularProbabilities         :: !ColorProbability
+  , probabilityDiffuseReflection  :: !Double
+  , probabilitySpecularReflection :: !Double
+  , brdf                          :: !BRDF
   }
 
 mkMaterial :: ColorProbability -> ColorProbability -> Material
@@ -43,16 +44,20 @@ mkMaterial diffuse@(ColorProbability !dr !dg !db) specular@(ColorProbability !sr
     !pd     = pr * drdgdb / (drdgdb + srsgsb)
 
 diffuseLight :: Material -> Light -> Light
-diffuseLight (Material (ColorProbability !dr !dg !db) _ pr _ _) (Light !r !g !b) =
-    Light (r * dr / pr)
-          (g * dg / pr)
-          (b * db / pr)
+diffuseLight (Material (ColorProbability !dr !dg !db) _ !pd _ _) (Light !r !g !b) =
+    Light (r * dr * ipd)
+          (g * dg * ipd)
+          (b * db * ipd)
+  where
+    !ipd = 1.0 / pd
 
 specularLight :: Material -> Light -> Light
 specularLight (Material _ (ColorProbability !sr !sg !sb) _ !ps _) (Light !r !g !b) =
-    Light (r * sr / ps)
-          (g * sg / ps)
-          (b * sb / ps)
+    Light (r * sr * ips)
+          (g * sg * ips)
+          (b * sb * ips)
+  where
+    !ips = 1.0 / ps
 
 diffuseBrdf :: ColorProbability -> BRDF
 diffuseBrdf !pd !incomingLight !incomingVector _ !surfaceNormal _ =

@@ -9,7 +9,6 @@ module Scene
 )
 where
 
-import Control.Applicative  ( (<$>) )
 import Data.List            ( minimumBy )
 import Data.Maybe           ( mapMaybe )
 import Data.Ord             ( comparing )

@@ -7,16 +7,18 @@ module Surface
 )
 where
 
-import Core      ( UnitVector, Point(..), Ray(..), Transform(..), RayPosition, VectorUnaryOps(..)
-                 , origin, to, at, neg, toRayPosition, unsafeForceUnitVector, magnitudeSquared
-                 , (|.|) )
-import Material  ( Material )
+import Numeric.FastMath  ( )
+
+import Core              ( UnitVector, Point(..), Ray(..), Transform(..), RayPosition, VectorUnaryOps(..)
+                         , origin, to, at, neg, toRayPosition, unsafeForceUnitVector, magnitudeSquared
+                         , (|.|) )
+import Material          ( Material )
 
 
 data Surface = Surface
     { surfaceIntersection  :: Ray   -> Maybe RayPosition
     , surfaceNormalAtPoint :: Point -> UnitVector
-    , surfaceMaterial      :: Material
+    , surfaceMaterial      :: !Material
     }
 
 
@@ -26,11 +28,10 @@ instance Transform Surface where
                 , surfaceNormalAtPoint = newNormal
                 , surfaceMaterial      = material
                 }
-      where newIntersection !ray = intersection $ translate nv ray
-            newNormal       !pos = normal       $ translate nv pos
-            nv                   = neg v
-
-
+      where
+        newIntersection !ray = intersection $ translate nv ray
+        newNormal       !pos = normal       $ translate nv pos
+        !nv                  = neg v
 
 mkSphere :: Double -> Material -> Surface
 mkSphere !radius !material = Surface
@@ -67,22 +68,22 @@ sphereIntersection !r (Ray !ro !rd)
             sd   = sqrt det
 
 sphereNormal :: Double -> Point -> UnitVector
-sphereNormal invr p =
+sphereNormal !invr !p =
     unsafeForceUnitVector $ (origin `to` p) |*| invr
 
 planeIntersection :: Point -> UnitVector -> Ray -> Maybe RayPosition
-planeIntersection point normal (Ray ro rd)
+planeIntersection !point !normal (Ray !ro !rd)
     | ln == 0.0 = Nothing
     | d   < 0.0 = Nothing
     | otherwise = Just $ toRayPosition d
-  where d  = ((ro `to` point) |.| normal) / ln
-        ln = rd |.| normal
+  where !d  = ((ro `to` point) |.| normal) / ln
+        !ln = rd |.| normal
 
 discIntersection :: Point -> UnitVector -> Double -> Ray -> Maybe RayPosition
-discIntersection point normal radius ray = do
+discIntersection !point !normal !radius !ray = do
     rp <- planeIntersection point normal ray
-    let pos    = ray `at` rp
-    let distSq = magnitudeSquared (point `to` pos)
+    let !pos    = ray `at` rp
+    let !distSq = magnitudeSquared (point `to` pos)
     if distSq <= radius * radius
         then Just rp
         else Nothing

@@ -29,7 +29,8 @@ module Core
 )
 where
 
-import Control.DeepSeq  ( NFData(..) )
+import Numeric.FastMath  ( )
+import Control.DeepSeq   ( NFData(..) )
 
 
 data Vector = Vector !Double !Double !Double
@@ -39,11 +40,13 @@ instance NFData Vector where
 
 newtype NonUnitVector = NonUnitVector Vector
 
-instance NFData NonUnitVector
+instance NFData NonUnitVector where
+    rnf !(NonUnitVector !(Vector !_ !_ !_)) = ()
 
 newtype UnitVector = UnitVector Vector
 
-instance NFData UnitVector
+instance NFData UnitVector where
+    rnf !(UnitVector !(Vector !_ !_ !_)) = ()
 
 data Point = Point !Double !Double !Double
 

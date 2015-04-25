@@ -8,23 +8,23 @@ module Scene
 )
 where
 
-import Control.Applicative  ( (<$>) )
-import Data.List            ( minimumBy )
-import Data.Maybe           ( mapMaybe )
-import Data.Ord             ( comparing )
+import Numeric.FastMath  ( )
+import Data.List         ( minimumBy )
+import Data.Maybe        ( mapMaybe )
+import Data.Ord          ( comparing )
 
-import Core                 ( Ray(..), RayPosition, Point, at )
-import Light                ( PhotonLightSource )
-import Surface              ( Surface, surfaceIntersection )
+import Core              ( Ray(..), RayPosition, Point, at )
+import Light             ( PhotonLightSource )
+import Surface           ( Surface, surfaceIntersection )
 
 
 data Scene = Scene [Surface] [PhotonLightSource]
 
 data Intersection = Intersection
-    { rayTested     :: Ray
-    , surface       :: Surface
-    , rayPosition   :: RayPosition
-    , worldPosition :: Point
+    { rayTested     :: !Ray
+    , surface       :: !Surface
+    , rayPosition   :: !RayPosition
+    , worldPosition :: !Point
     }
 
 mkScene :: [Surface] -> [PhotonLightSource] -> Scene
@@ -32,8 +32,8 @@ mkScene =
     Scene
 
 sceneIntersection :: Scene -> Ray -> Maybe Intersection
-sceneIntersection (Scene surfaces _) ray =
-      minimumBy (comparing rayPosition) <$> maybeIntersections
+sceneIntersection (Scene !surfaces _) !ray =
+    minimumBy (comparing rayPosition) <$> maybeIntersections
   where
     allIntersections             = mapMaybe (renderableIntersection ray) surfaces
     maybeIntersections           = maybeList allIntersections
@@ -41,10 +41,10 @@ sceneIntersection (Scene surfaces _) ray =
     maybeList xs@(_:_)           = Just xs
 
 renderableIntersection :: Ray -> Surface -> Maybe Intersection
-renderableIntersection ray sfc =
+renderableIntersection !ray !sfc =
     toIntersection <$> surfaceIntersection sfc ray
   where
-    toIntersection t =
+    toIntersection !t =
       Intersection { rayTested     = ray
                    , surface       = sfc
                    , rayPosition   = t
@@ -52,5 +52,5 @@ renderableIntersection ray sfc =
                    }
 
 allPhotonLightSources :: Scene -> [PhotonLightSource]
-allPhotonLightSources (Scene _ lightSources) =
+allPhotonLightSources (Scene _ !lightSources) =
     lightSources

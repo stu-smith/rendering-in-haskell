@@ -1,0 +1,12 @@
+ENABLE PROFILING:
+
+In .cabal file, add:
+
+-auto-all -caf-all -fforce-recomp
+
+to ghc-options
+
+
+Run using:
+
+cabal run experiment0X -- +RTS -p

@@ -4,6 +4,7 @@ module Main
 )
 where
 
+import Numeric.FastMath  ( )
 import Control.DeepSeq   ( deepseq )
 import System.Directory  ( createDirectoryIfMissing )
 
@@ -31,7 +32,7 @@ main = do
     cam = Ray { rayOrigin    = Point 50.0 52.0 295.6
               , rayDirection = normal 0.0 (-0.042612) (-1.0)
               }
-    photonMap = runRnd 1 $ generatePhotonMap cornellBox 100000
+    photonMap = runRnd 1 $ generatePhotonMap cornellBox 200000
 
 
 
@@ -49,12 +50,12 @@ cornellBox = mkScene
 
     , disc   (Point  50.0   81.0 81.6) (neg unitY) 5.0 emissiveWhite
     ]
-    [ discLight (Point 50.0 79.33 81.6) (neg unitY) 10.0 (Light 1500.0 1500.0 1500.0)
+    [ discLight (Point 50.0 79.33 81.6) (neg unitY) 10.0 (Light 2500.0 2500.0 2500.0)
     ]
   where
     emissiveWhite = mkMaterial (ColorProbability 0.99 0.99 0.99) (ColorProbability 0.00 0.00 0.00)
-    reflective    = mkMaterial (ColorProbability 0.00 0.00 0.00) (ColorProbability 0.99 0.99 0.99)
-    bitReflective = mkMaterial (ColorProbability 0.50 0.50 0.50) (ColorProbability 0.40 0.40 0.40)
+    reflective    = mkMaterial (ColorProbability 0.00 0.00 0.00) (ColorProbability 0.90 0.90 0.90)
+    bitReflective = mkMaterial (ColorProbability 0.10 0.10 0.10) (ColorProbability 0.40 0.40 0.40)
     reddish       = mkMaterial (ColorProbability 0.50 0.25 0.25) (ColorProbability 0.00 0.00 0.00)
     blueish       = mkMaterial (ColorProbability 0.25 0.25 0.50) (ColorProbability 0.00 0.00 0.00)
     greyish       = mkMaterial (ColorProbability 0.50 0.50 0.50) (ColorProbability 0.00 0.00 0.00)
