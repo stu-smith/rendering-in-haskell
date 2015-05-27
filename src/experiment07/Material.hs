@@ -9,6 +9,9 @@ module Material
 , brdf
 , diffuseLight
 , specularLight
+, hasSpecularComponent
+, specularProbabilities
+, mul
 )
 where
 
@@ -82,3 +85,9 @@ phongBrdf !pd !ps =
 mul :: Light -> ColorProbability -> Light
 mul (Light !lr !lg !lb) (ColorProbability !pr !pg !pb) =
     Light (lr * pr) (lg * pg) (lb * pb)
+
+hasSpecularComponent :: Material -> Bool
+hasSpecularComponent material =
+    pr > 0.0 || pg > 0.0 || pb > 0.0
+  where
+    (ColorProbability pr pg pb) = specularProbabilities material

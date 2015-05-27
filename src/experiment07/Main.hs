@@ -45,8 +45,8 @@ cornellBox = mkScene
     , plane  (Point  50.0  81.6  81.6) (neg unitY) greyish
     , plane  (Point  50.0  40.8 170.0) (neg unitZ) pureBlack
 
-    , sphere (Point  27.0  16.5  47.0)  16.5                       reflective
-    , sphere (Point  73.0  16.5  78.0)  16.5                       bitReflective
+    , sphere (Point  27.0  16.5  47.0)  16.5       reflective
+    , sphere (Point  73.0  16.5  78.0)  16.5       bitReflective
 
     , disc   (Point  50.0   81.0 81.6) (neg unitY) 5.0 emissiveWhite
     ]

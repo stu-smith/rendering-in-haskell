@@ -26,6 +26,10 @@ import Surface              ( Surface(..) )
 
 data PhotonSurfaceInteraction = PhotonSurfaceInteraction !UnitVector !Light
 
+data LightTransferEvent = EventDiffuse | EventSpecular
+
+data LightTransfer = LightTransfer Ray Light LightTransferEvent
+
 instance NFData PhotonSurfaceInteraction where
     rnf (PhotonSurfaceInteraction !v !l) = rnf v `seq` rnf l `seq` ()
 
@@ -61,25 +65,34 @@ generatePhotonSurfaceInxsForLightSource scene num lightSource =
     concatM $ replicateM num $ generateSinglePhotonSurfaceInxn scene lightSource
 
 generateSinglePhotonSurfaceInxn :: Scene -> PhotonLightSource -> Rnd [(Point, PhotonSurfaceInteraction)]
-generateSinglePhotonSurfaceInxn scene lightSource =
-    lightSource >>= traceLightRay scene
+generateSinglePhotonSurfaceInxn scene lightSource = do
+    (ray, light) <- lightSource
+    traceLightRay scene (LightTransfer ray light EventDiffuse)
 
-traceLightRay :: Scene -> (Ray, Light) -> Rnd [(Point, PhotonSurfaceInteraction)]
-traceLightRay !scene !incoming@(!incomingRay, incomingLight) =
+handlePhotonIntersection :: [(Point, PhotonSurfaceInteraction)] -> LightTransferEvent -> (Point, PhotonSurfaceInteraction) -> [(Point, PhotonSurfaceInteraction)]
+handlePhotonIntersection list event psi =
+  case event of
+    EventDiffuse  -> psi : list
+    EventSpecular -> list
+
+traceLightRay :: Scene -> LightTransfer -> Rnd [(Point, PhotonSurfaceInteraction)]
+traceLightRay !scene !incoming@(LightTransfer !incomingRay incomingLight _) =
     case maybeIntersection of
       Nothing -> return []
       Just ix -> do
           maybeOutgoingLight <- computeOutgoingLightRay ix incoming
+          let event = maybe EventDiffuse getEvent maybeOutgoingLight
           let photonIntersection = toPhotonIntersection ix
           recurse <- maybe (return []) (traceLightRay scene) maybeOutgoingLight
-          return (photonIntersection : recurse)
+          return $ handlePhotonIntersection recurse event photonIntersection
   where
+    getEvent (LightTransfer _ _ ev) = ev
     !maybeIntersection = sceneIntersection scene incomingRay
     toPhotonIntersection (Intersection (Ray _ !rd) _ _ !pos) =
       (pos, PhotonSurfaceInteraction rd incomingLight)
 
-computeOutgoingLightRay :: Intersection -> (Ray, Light) -> Rnd (Maybe (Ray, Light))
-computeOutgoingLightRay (Intersection _ (Surface _ !nrm !material) _ !wp) (Ray _ !incomingRay, !incomingLight) = do
+computeOutgoingLightRay :: Intersection -> LightTransfer -> Rnd (Maybe LightTransfer)
+computeOutgoingLightRay (Intersection _ (Surface _ !nrm !material) _ !wp) (LightTransfer (Ray _ !incomingRay) !incomingLight _) = do
     prob <- rndDouble 0.0 1.0
     go prob
   where
@@ -90,13 +103,13 @@ computeOutgoingLightRay (Intersection _ (Surface _ !nrm !material) _ !wp) (Ray _
             | otherwise      = return Nothing
     goDiffuse = do
         dr <- diffuseReflect surfaceNormal
-        return $ Just ( Ray movedFromSurface dr
-                      , diffuseLight material incomingLight
-                      )
+        return $ Just $ LightTransfer (Ray movedFromSurface dr)
+                                      (diffuseLight material incomingLight)
+                                      EventDiffuse
     goSpecular =
-        return $ Just ( Ray movedFromSurface $ specularReflect surfaceNormal incomingRay
-                      , specularLight material incomingLight
-                      )
+        return $ Just $ LightTransfer (Ray movedFromSurface $ specularReflect surfaceNormal incomingRay)
+                                      (specularLight material incomingLight)
+                                      EventSpecular
     !surfaceNormal = nrm wp
     !movedFromSurface = translate (surfaceNormal |*| epsilon) wp
     !epsilon = 0.0001
