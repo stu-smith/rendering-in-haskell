@@ -10,7 +10,7 @@ import Color      ( Color )
 import Core       ( Ray(..), (|*|), (|+|), (|.|), translate, normalize )
 import Scene      ( Intersection(..) )
 import Light      ( Light, toColor, black, sumLights )
-import Material   ( hasSpecularComponent, mul, specularProbabilities )
+import Material   ( hasSpecularComponent, mul, specularProbabilities, emmissive )
 import PhotonMap  ( PhotonMap, getLightToViewerAtIntersection )
 import Scene      ( Scene, sceneIntersection )
 import Surface    ( Surface(..) )
@@ -27,14 +27,19 @@ renderRayAsLight !ray scene photonMap =
     maybeIntersection     = sceneIntersection scene ray
     allLight intersection = sumLights [ diffuseRender        photonMap intersection
                                       , specularRender scene photonMap intersection
+                                      , emmissiveRender                intersection
                                       ]
+
+emmissiveRender :: Intersection -> Light
+emmissiveRender !intersection =
+    (emmissive . surfaceMaterial . surface) intersection
 
 diffuseRender :: PhotonMap -> Intersection -> Light
 diffuseRender =
     getLightToViewerAtIntersection
 
 specularRender :: Scene -> PhotonMap -> Intersection -> Light
-specularRender scene photonMap (Intersection (Ray _ incomingVec) (Surface _ nrm material) _ wp) =
+specularRender scene photonMap (Intersection (Ray _ incomingVec) (Surface _ nrm !material) _ wp) =
     if hasSpecularComponent material
       then reflectedLight `mul` specularProbabilities material
       else black

@@ -67,23 +67,24 @@ generatePhotonSurfaceInxsForLightSource scene num lightSource =
 generateSinglePhotonSurfaceInxn :: Scene -> PhotonLightSource -> Rnd [(Point, PhotonSurfaceInteraction)]
 generateSinglePhotonSurfaceInxn scene lightSource = do
     (ray, light) <- lightSource
-    traceLightRay scene (LightTransfer ray light EventDiffuse)
+    traceLightRay 10 scene (LightTransfer ray light EventDiffuse)
 
 handlePhotonIntersection :: [(Point, PhotonSurfaceInteraction)] -> LightTransferEvent -> (Point, PhotonSurfaceInteraction) -> [(Point, PhotonSurfaceInteraction)]
-handlePhotonIntersection list event psi =
+handlePhotonIntersection !list !event psi =
   case event of
     EventDiffuse  -> psi : list
     EventSpecular -> list
 
-traceLightRay :: Scene -> LightTransfer -> Rnd [(Point, PhotonSurfaceInteraction)]
-traceLightRay !scene !incoming@(LightTransfer !incomingRay incomingLight _) =
-    case maybeIntersection of
+traceLightRay :: Int -> Scene -> LightTransfer -> Rnd [(Point, PhotonSurfaceInteraction)]
+traceLightRay !limit !scene !incoming@(LightTransfer !incomingRay incomingLight _) =
+    if limit <= 0 then return []
+    else case maybeIntersection of
       Nothing -> return []
       Just ix -> do
           maybeOutgoingLight <- computeOutgoingLightRay ix incoming
-          let event = maybe EventDiffuse getEvent maybeOutgoingLight
-          let photonIntersection = toPhotonIntersection ix
-          recurse <- maybe (return []) (traceLightRay scene) maybeOutgoingLight
+          let !event = maybe EventDiffuse getEvent maybeOutgoingLight
+          let !photonIntersection = toPhotonIntersection ix
+          recurse <- maybe (return []) (traceLightRay (limit - 1) scene) maybeOutgoingLight
           return $ handlePhotonIntersection recurse event photonIntersection
   where
     getEvent (LightTransfer _ _ ev) = ev

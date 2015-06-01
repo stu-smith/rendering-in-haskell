@@ -4,6 +4,7 @@ module Material
 , ColorProbability(..)
 , BRDF
 , mkMaterial
+, mkEmmissive
 , probabilityDiffuseReflection
 , probabilitySpecularReflection
 , brdf
@@ -12,12 +13,13 @@ module Material
 , hasSpecularComponent
 , specularProbabilities
 , mul
+, emmissive
 )
 where
 
 import Numeric.FastMath  ( )
 import Core              ( UnitVector, Point, (|.|), (|*|), (|-|) )
-import Light             ( Light(..), scaled, sumLights )
+import Light             ( Light(..), scaled, sumLights, black )
 
 
 type BRDF = Light -> UnitVector -> UnitVector -> UnitVector -> Point -> Light
@@ -30,6 +32,7 @@ data Material = Material
   , probabilityDiffuseReflection  :: !Double
   , probabilitySpecularReflection :: !Double
   , brdf                          :: !BRDF
+  , emmissive                     :: !Light
   }
 
 mkMaterial :: ColorProbability -> ColorProbability -> Material
@@ -39,6 +42,7 @@ mkMaterial diffuse@(ColorProbability !dr !dg !db) specular@(ColorProbability !sr
              , probabilityDiffuseReflection  = pd
              , probabilitySpecularReflection = pr - pd
              , brdf                          = phongBrdf diffuse specular
+             , emmissive                     = black
              }
   where
     !drdgdb = dr + dg + db
@@ -46,8 +50,18 @@ mkMaterial diffuse@(ColorProbability !dr !dg !db) specular@(ColorProbability !sr
     !pr     = max (dr + sr) $ max (dg + sg) (db + sb)
     !pd     = pr * drdgdb / (drdgdb + srsgsb)
 
+mkEmmissive :: Light -> Material
+mkEmmissive light =
+    Material { diffuseProbabilities          = ColorProbability 0.0 0.0 0.0
+             , specularProbabilities         = ColorProbability 0.0 0.0 0.0
+             , probabilityDiffuseReflection  = 0.0
+             , probabilitySpecularReflection = 0.0
+             , brdf                          = emmissiveBrdf light
+             , emmissive                     = light
+             }
+
 diffuseLight :: Material -> Light -> Light
-diffuseLight (Material (ColorProbability !dr !dg !db) _ !pd _ _) (Light !r !g !b) =
+diffuseLight (Material (ColorProbability !dr !dg !db) _ !pd _ _ _) (Light !r !g !b) =
     Light (r * dr * ipd)
           (g * dg * ipd)
           (b * db * ipd)
@@ -55,7 +69,7 @@ diffuseLight (Material (ColorProbability !dr !dg !db) _ !pd _ _) (Light !r !g !b
     !ipd = 1.0 / pd
 
 specularLight :: Material -> Light -> Light
-specularLight (Material _ (ColorProbability !sr !sg !sb) _ !ps _) (Light !r !g !b) =
+specularLight (Material _ (ColorProbability !sr !sg !sb) _ !ps _ _) (Light !r !g !b) =
     Light (r * sr * ips)
           (g * sg * ips)
           (b * sb * ips)
@@ -81,6 +95,11 @@ sumBrdfs !brdfs incomingLight incomingVector outgoingVector surfaceNormal wp =
 phongBrdf :: ColorProbability -> ColorProbability -> BRDF
 phongBrdf !pd !ps =
     sumBrdfs [diffuseBrdf pd, specularBrdf ps]
+
+emmissiveBrdf :: Light -> BRDF
+emmissiveBrdf light =
+    (const . const . const . const . const) light
+
 
 mul :: Light -> ColorProbability -> Light
 mul (Light !lr !lg !lb) (ColorProbability !pr !pg !pb) =
