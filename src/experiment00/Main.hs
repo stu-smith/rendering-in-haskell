@@ -13,8 +13,8 @@ main :: IO ()
 main = do
     putStrLn "Starting render..."
     createDirectoryIfMissing True "output"
-    saveRender "output/experiment00.png" 640 480 testRenderFunction
-    putStrLn "Written output to output/experiment00.png"
+    saveRender "output/experiment00.bmp" 640 480 testRenderFunction
+    putStrLn "Written output to output/experiment00.bmp"
 
 testRenderFunction :: Int -> Int -> Int -> Int -> Color
 testRenderFunction !x !y !w !h =

@@ -23,8 +23,8 @@ main :: IO ()
 main = do
     putStrLn "Starting render..."
     createDirectoryIfMissing True "output"
-    saveRender "output/experiment05.png" 640 480 $ render cam cornellBox
-    putStrLn "Written output to output/experiment05.png"
+    saveRender "output/experiment05.bmp" 640 480 $ render cam cornellBox
+    putStrLn "Written output to output/experiment05.bmp"
   where cam = Ray { rayOrigin    = Point 50.0 52.0 295.6
                   , rayDirection = normal 0.0 (-0.042612) (-1.0)
                   }

@@ -110,3 +110,20 @@ executable experiment07
   default-language:    Haskell2010
   ghc-options:         -O3 -Wall -funbox-strict-fields -fwarn-tabs -threaded -with-rtsopts=-N -optc-mfpmath=sse -optc-msse2 -optc-ffast-math -optc-O3 -fexcess-precision
   default-extensions:  BangPatterns
+
+executable experiment08
+  main-is:             Main.hs
+  build-depends:       base >= 4.8
+                     , bmp -any
+                     , bytestring -any
+                     , directory -any
+                     , kdt -any
+                     , mtl -any
+                     , random -any
+                     , deepseq -any
+                     , fast-math -any
+                     , parallel -any
+  hs-source-dirs:      src/experiment08
+  default-language:    Haskell2010
+  ghc-options:         -O3 -Wall -funbox-strict-fields -fwarn-tabs -threaded -with-rtsopts=-N -optc-mfpmath=sse -optc-msse2 -optc-ffast-math -optc-O3 -fexcess-precision
+  default-extensions:  BangPatterns

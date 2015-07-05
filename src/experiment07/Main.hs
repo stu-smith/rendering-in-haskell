@@ -25,8 +25,8 @@ main :: IO ()
 main = do
     putStrLn "Starting render..."
     createDirectoryIfMissing True "output"
-    saveRender "output/experiment07.png" 640 480 $ combineRender $ map (render cam cornellBox) photonMaps
-    putStrLn "Written output to output/experiment07.png"
+    saveRender "output/experiment07.bmp" 640 480 $ combineRender $ map (render cam cornellBox) photonMaps
+    putStrLn "Written output to output/experiment07.bmp"
   where
     cam = Ray { rayOrigin    = Point 50.0 52.0 350.0
               , rayDirection = normal 0.0 (-0.042612) (-1.0)

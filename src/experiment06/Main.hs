@@ -26,8 +26,8 @@ main = do
     putStrLn "Starting render..."
     createDirectoryIfMissing True "output"
     photonMap `deepseq` putStrLn ("Photon map done with " ++ show (count photonMap) ++ " interactions.")
-    saveRender "output/experiment06.png" 640 480 $ render cam cornellBox photonMap
-    putStrLn "Written output to output/experiment06.png"
+    saveRender "output/experiment06.bmp" 640 480 $ render cam cornellBox photonMap
+    putStrLn "Written output to output/experiment06.bmp"
   where
     cam = Ray { rayOrigin    = Point 50.0 52.0 295.6
               , rayDirection = normal 0.0 (-0.042612) (-1.0)
